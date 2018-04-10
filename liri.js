@@ -1,9 +1,11 @@
 require("dotenv").config();
 var request = require("request");//this is for movie
-var spotifyrequire = require('node-spotify-api');
-var twitterrequire = require("twitter");
-var dotenvrequire = require("dotenv");
+var spotifyrequire = require('node-spotify-api');//for spotify
+var twitterrequire = require("twitter");//twitter
+var dotenvrequire = require("dotenv");//dotenv
 var keysINeed = require("./keys.js");//this is for Spotify and Twitter
+
+var fs = require("fs");//readfile and writefile
 
 var command = process.argv[2];
 var userInput = process.argv[3];
@@ -19,7 +21,7 @@ else if(command === "spotify-this-song") {
     spotifyfunction();
 }
 else if(command === "do-what-it-says") {
-    // spotifyRandomFile();
+    randomfile();
 }
 else {
     console.log ("That is not a valid command.");
@@ -30,12 +32,25 @@ else {
 
 function moviefunction() {
 
+    if (userInput === undefined) {
+        userInput = "Mr. Nobody";
+    }
+        
     var queryUrl = "http://www.omdbapi.com/?t=" + userInput + "&y=&plot=short&apikey=trilogy";
     console.log(queryUrl);
 
     request(queryUrl, function(error, response, body) {
         
         if (!error && response.statusCode === 200) {
+
+            if (userInput === "Mr. Nobody") {
+                console.log("If you haven't watched Mr. Nobody, then you should: <http://www.imdb.com/title/tt0485947/>");
+                console.log("It's on Netflix!");
+                console.log("See movie details below.")
+                console.log("*********");
+            }
+
+            // else { //use else if user inputs other movies.
             console.log("Title of the movie: ", JSON.parse(body).Title);
             console.log("Year: ", JSON.parse(body).Year);
             console.log("IMDB Rating: ", JSON.parse(body).imdbRating);
@@ -53,7 +68,7 @@ function moviefunction() {
             else{
                 console.log("Rotten Tomatoes Rating: N/A");
             }
-            // }
+            // }// else
         }
     });
 }
@@ -80,6 +95,10 @@ function twitterfunction() {
 }
 
 function spotifyfunction() {
+
+    if (userInput === undefined) {
+        userInput = "The Sign Ace of Base";
+    }
        
     var spotify = new spotifyrequire(keysINeed.spotify);
 
@@ -99,6 +118,36 @@ function spotifyfunction() {
 
 }
 
-function spotifyRandomFile() {
-    //use readfile and appendfile for this function
+function randomfile() {
+
+    //random.txt orig had spotify-this-song,"I Want it That Way"
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            var dataArr = data.split(",");
+                command = dataArr[0];
+                userInput = dataArr[1];
+
+                if (command === "movie-this") {    
+                    moviefunction();
+                }
+                else if(command === "my-tweets") {
+                    twitterfunction();
+                }
+                else if(command === "spotify-this-song") {
+                    spotifyfunction();
+                }
+                else if(command === "do-what-it-says") {
+                    randomfile();
+                }
+                else {
+                    console.log ("That is not a valid command.");
+                }
+
+            }
+        
+    })
+
 }
